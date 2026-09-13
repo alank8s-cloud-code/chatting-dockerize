@@ -1,0 +1,45 @@
+name: Code Quality and dependency Check for frontend
+
+on:
+  push:
+    branches:
+      - testing-branch
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependency
+        working-directory: frontend
+        run: |
+          npm ci
+          echo "Dependency Install successful"
+
+      - name: Code Linting
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Dependency Security Check
+        working-directory: frontend
+        # Remaining findings live inside react-scripts' own bundled build
+        # tooling (svgo/postcss/jest/webpack-dev-server). No non-breaking
+        # upstream fix exists yet; every suggested fix forces react-scripts
+        # down to a broken 0.0.0. Fail only on critical, report the rest.
+        run: npm audit --audit-level=critical
+
+      - name: Testing
+        working-directory: frontend
+        run: CI=true npm test
+
+      - name: Production Build
+        working-directory: frontend
+        run: CI=true npm run build
