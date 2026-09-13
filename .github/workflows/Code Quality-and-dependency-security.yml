@@ -30,11 +30,7 @@ jobs:
 
       - name: Dependency Security Check
         working-directory: frontend
-        # Remaining findings live inside react-scripts' own bundled build
-        # tooling (svgo/postcss/jest/webpack-dev-server). No non-breaking
-        # upstream fix exists yet; every suggested fix forces react-scripts
-        # down to a broken 0.0.0. Fail only on critical, report the rest.
-        run: npm audit --audit-level=critical
+        run: npm audit
 
       - name: Testing
         working-directory: frontend
