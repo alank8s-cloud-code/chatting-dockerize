@@ -1,0 +1,43 @@
+name: Code Quality and dependency Check
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Maven
+        uses: s4u/setup-maven-action@v1.18.0
+        with:
+          java-version: 21
+          java-distribution: temurin
+          maven-version: 3.8.7
+
+      - name: Check Maven Version
+        run: mvn -v
+
+      - name: Compile the code
+        working-directory: ./backend
+        run: |
+          mvn compile
+          echo "successfully the compile the code"
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: "fs"
+          scan-ref: "backend"
+          severity: "HIGH,CRITICAL"
+          exit-code: 0
+
+      - name: Maven Build Verification
+        working-directory: ./backend
+        run: |
+          mvn clean verify -DskipTests
+          echo "successfully the Build the code"

@@ -1,9 +1,6 @@
 name: Code Quality and dependency Check
 
-on:
-  push:
-    branches:
-      - main
+on: workflow_dispatch
 
 jobs:
   frontend:
