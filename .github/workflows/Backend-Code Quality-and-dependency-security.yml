@@ -31,10 +31,11 @@ jobs:
       - name: Trivy Filesystem Scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
+          version: "v0.74.0"
           scan-type: "fs"
           scan-ref: "backend"
           severity: "HIGH,CRITICAL"
-          exit-code: "0" # Change to "1" if you want to break the build on high/critical bugs
+          exit-code: "1" # Change to "1" if you want to break the build on high/critical bugs
 
       - name: Maven Build & Verify
         working-directory: ./backend
