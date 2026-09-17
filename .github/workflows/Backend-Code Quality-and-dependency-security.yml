@@ -1,4 +1,4 @@
-name: Backend Code Quality and dependency Check
+name: Backend Code Quality and Dependency Check
 
 on:
   push:
@@ -12,32 +12,29 @@ jobs:
       - name: Code Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Maven
+      - name: Setup Maven & Java
         uses: s4u/setup-maven-action@v1.18.0
         with:
           java-version: 21
           java-distribution: temurin
           maven-version: 3.8.7
+          # Enables automatic caching of ~/.m2/repository to speed up builds
+          cache: "maven"
 
       - name: Check Maven Version
         run: mvn -v
 
-      - name: Compile the code
-        working-directory: ./backend
-        run: |
-          mvn compile
-          echo "successfully the compile the code"
-
-      - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@v0.36.0
+      # Scan the raw filesystem before wasting compute on building if major vulnerabilities exist
+      - name: Trivy Filesystem Scan
+        uses: aquasecurity/trivy-action@v2.3.0
         with:
           scan-type: "fs"
           scan-ref: "backend"
           severity: "HIGH,CRITICAL"
-          exit-code: "0"
+          exit-code: "0" # Change to "1" if you want to break the build on high/critical bugs
 
-      - name: Maven Build Verification
+      - name: Maven Build & Verify
         working-directory: ./backend
         run: |
           mvn clean verify -DskipTests
-          echo "successfully the Build the code"
+          echo "Successfully compiled and verified the build."
