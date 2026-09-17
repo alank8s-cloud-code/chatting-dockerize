@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: Code Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Setup Maven & Java
         uses: s4u/setup-maven-action@v1.18.0
@@ -19,7 +22,7 @@ jobs:
           java-distribution: temurin
           maven-version: 3.8.7
           # Enables automatic caching of ~/.m2/repository to speed up builds
-          cache: "maven"
+          cache-enabled: true
 
       - name: Check Maven Version
         run: mvn -v
