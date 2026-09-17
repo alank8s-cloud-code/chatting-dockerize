@@ -1,6 +1,7 @@
 name: AWS OIDC Challenge
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -11,17 +12,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Get OIDC claims
-        env:
-          AUDIENCE: sts.amazonaws.com
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::468895763184:role/github-oidc-challenge-role
+          aws-region: ap-south-1
+
+      - name: Verify AWS identity
         run: |
-          TOKEN_JSON=$(curl -s \
-            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=$AUDIENCE")
+          aws sts get-caller-identity
 
-          ID_TOKEN=$(echo "$TOKEN_JSON" | jq -r '.value')
-
-          echo "$ID_TOKEN" | cut -d '.' -f2 | base64 -d 2>/dev/null | jq \
-            '{sub, aud, iss, repository, repository_id, repository_owner, repository_owner_id, ref}'
+      - name: List S3 buckets
+        run: |
+          aws s3 ls
