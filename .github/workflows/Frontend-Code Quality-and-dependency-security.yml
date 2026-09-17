@@ -31,7 +31,7 @@ jobs:
 
       - name: Testing
         working-directory: frontend
-        run: CI=true npm test
+        run: CI=true npm test -- --watchAll=false
 
       - name: Production Build
         working-directory: frontend
