@@ -21,9 +21,12 @@ jobs:
           java-version: 21
           java-distribution: temurin
           maven-version: 3.8.7
+          cache: maven
+          cache-dependency-path: backend/pom.xml
 
-      - name: Check Maven Version
-        run: mvn -v
+      - name: Resolve Maven dependencies
+        working-directory: backend
+        run: mvn dependency:go-offline dependency:resolve-plugins
 
       # Scan the raw filesystem before wasting compute on building if major vulnerabilities exist
       - name: Trivy Filesystem Scan
