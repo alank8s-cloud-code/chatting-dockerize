@@ -27,6 +27,7 @@
 			by default. Re-check these two against Maven Central
 			periodically; newer patch releases may exist.
 		-->
+		<tomcat.version>10.1.58</tomcat.version>
 		<jackson-bom.version>2.21.5</jackson-bom.version>
 	</properties>
 	<dependencies>
