@@ -13,11 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Debug OIDC claims
+        uses: github/actions-oidc-debugger@main
         with:
-          role-to-assume: arn:aws:iam::468895763184:role/github-oidc-challenge-role
-          aws-region: ap-south-1
-
-      - run: aws sts get-caller-identity
-
-      - run: aws s3 ls
+          audience: sts.amazonaws.com
