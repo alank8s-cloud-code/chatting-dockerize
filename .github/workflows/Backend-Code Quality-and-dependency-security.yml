@@ -21,8 +21,6 @@ jobs:
           java-version: 21
           java-distribution: temurin
           maven-version: 3.8.7
-          # Enables automatic caching of ~/.m2/repository to speed up builds
-          cache-enabled: true
 
       - name: Check Maven Version
         run: mvn -v
