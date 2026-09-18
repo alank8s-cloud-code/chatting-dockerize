@@ -1,0 +1,21 @@
+name: Hadolint Dockerfile Lint
+
+on: workflow_dispatch
+jobs:
+  hadolint:
+    name: Lint Multi-stage Dockerfiles
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Lint Frontend Dockerfile
+        uses: hadolint/hadolint-action@v3.5.0
+        with:
+          dockerfile: ./frontend/Dockerfile.multistage
+
+      - name: Lint Backend Dockerfile
+        uses: hadolint/hadolint-action@v3.5.0
+        with:
+          dockerfile: ./backend/Dockerfile.multistage

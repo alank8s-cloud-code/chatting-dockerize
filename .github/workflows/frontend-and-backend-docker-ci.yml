@@ -1,0 +1,55 @@
+name: Docker CI Frontend and Backend
+
+on: workflow_dispatch
+
+jobs:
+  Docker_CI:
+    name: Docker CI Pipeline
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # PHASE 1: LINT (Checks the backend Dockerfile)
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.5.0
+        with:
+          dockerfile: ./backend/Dockerfile.multistage
+
+      # PHASE 2: BUILD (Builds the image from the backend folder)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build local Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend # Changes the working context to backend folder
+          file: Dockerfile.multistage
+          load: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chatting-app:${{ github.sha }}
+
+      # PHASE 3: SCAN
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: "${{ secrets.DOCKERHUB_USERNAME }}/chatting-app:${{ github.sha }}"
+          format: "table"
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: "CRITICAL,HIGH"
+
+      # PHASE 4: LOGIN & PUSH
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push Image to Docker Hub
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend # Ensure context matches the build step
+          file: ./backend/Dockerfile.mut
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chatting-app:${{ github.sha }}
