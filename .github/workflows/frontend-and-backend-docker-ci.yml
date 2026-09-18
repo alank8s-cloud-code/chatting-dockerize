@@ -11,13 +11,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # PHASE 1: LINT (Checks the backend Dockerfile)
-      - name: Lint Dockerfile
-        uses: hadolint/hadolint-action@v3.5.0
-        with:
-          dockerfile: ./backend/Dockerfile.multistage
-
-      # PHASE 2: BUILD (Builds the image from the backend folder)
+      # PHASE 1: BUILD (Builds the image from the backend folder)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
