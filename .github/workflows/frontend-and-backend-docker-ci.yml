@@ -1,6 +1,14 @@
 name: Docker CI Frontend and Backend
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BACKEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/chatting-app-backend
+  FRONTEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/chatting-app-frontend
 
 jobs:
   Docker_CI:
@@ -8,42 +16,103 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # --------------------------------------------------
+      # 1. CHECKOUT
+      # --------------------------------------------------
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      # PHASE 1: BUILD (Builds the image from the backend folder)
+      # --------------------------------------------------
+      # 2. VALIDATE DOCKER COMPOSE
+      # --------------------------------------------------
+      - name: Validate Docker Compose
+        run: docker compose config
+
+      # --------------------------------------------------
+      # 3. SETUP DOCKER BUILDX
+      # --------------------------------------------------
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Build local Docker image
-        uses: docker/build-push-action@v7
-        with:
-          context: ./backend # Changes the working context to backend folder
-          file: Dockerfile.multistage
-          load: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chatting-app:${{ github.sha }}
-
-      # PHASE 3: SCAN
-      - name: Scan Docker image with Trivy
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: "${{ secrets.DOCKERHUB_USERNAME }}/chatting-app:${{ github.sha }}"
-          format: "table"
-          exit-code: "1"
-          ignore-unfixed: true
-          severity: "CRITICAL,HIGH"
-
-      # PHASE 4: LOGIN & PUSH
+      # --------------------------------------------------
+      # 4. LOGIN TO DOCKER HUB
+      # --------------------------------------------------
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Push Image to Docker Hub
+      # --------------------------------------------------
+      # 5. BUILD BACKEND IMAGE
+      # --------------------------------------------------
+      - name: Build backend Docker image
         uses: docker/build-push-action@v7
         with:
-          context: ./backend # Ensure context matches the build step
-          file: ./backend/Dockerfile.mut
+          context: ./backend
+          file: ./backend/Dockerfile.multistage
+          load: true
+          push: false
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+
+      # --------------------------------------------------
+      # 6. BUILD FRONTEND IMAGE
+      # --------------------------------------------------
+      - name: Build frontend Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile.multistage
+          load: true
+          push: false
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+
+      # --------------------------------------------------
+      # 7. SCAN BACKEND IMAGE
+      # --------------------------------------------------
+      - name: Scan backend image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+
+      # --------------------------------------------------
+      # 8. SCAN FRONTEND IMAGE
+      # --------------------------------------------------
+      - name: Scan frontend image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+
+      # --------------------------------------------------
+      # 9. PUSH BACKEND IMAGE
+      # --------------------------------------------------
+      - name: Push backend image to Docker Hub
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile.multistage
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chatting-app:${{ github.sha }}
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+
+      # --------------------------------------------------
+      # 10. PUSH FRONTEND IMAGE
+      # --------------------------------------------------
+      - name: Push frontend image to Docker Hub
+        uses: docker/build-push-action@v7
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile.multistage
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
