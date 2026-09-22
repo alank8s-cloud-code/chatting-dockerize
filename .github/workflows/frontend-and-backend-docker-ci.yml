@@ -8,7 +8,6 @@ permissions:
 
 env:
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   docker-ci:
@@ -68,7 +67,7 @@ jobs:
       - name: Scan backend image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ env.DOCKERHUB_USERNAME }}/chattingo-backend:${{ env.IMAGE_TAG }}
+          image-ref: ${{ env.DOCKERHUB_USERNAME }}/chattingo-backend:latest
           format: table
           severity: HIGH,CRITICAL
           exit-code: "1"
@@ -81,7 +80,7 @@ jobs:
       - name: Scan frontend image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ env.DOCKERHUB_USERNAME }}/chattingo-frontend:${{ env.IMAGE_TAG }}
+          image-ref: ${{ env.DOCKERHUB_USERNAME }}/chattingo-frontend:latest
           format: table
           severity: HIGH,CRITICAL
           exit-code: "1"
@@ -94,7 +93,7 @@ jobs:
       - name: Push backend image
         run: |
           docker push \
-            ${{ env.DOCKERHUB_USERNAME }}/chattingo-backend:${{ env.IMAGE_TAG }}
+            ${{ env.DOCKERHUB_USERNAME }}/chattingo-backend:latest
 
       # ==========================================
       # 10. PUSH FRONTEND IMAGE
@@ -102,4 +101,4 @@ jobs:
       - name: Push frontend image
         run: |
           docker push \
-            ${{ env.DOCKERHUB_USERNAME }}/chattingo-frontend:${{ env.IMAGE_TAG }}
+            ${{ env.DOCKERHUB_USERNAME }}/chattingo-frontend:latest
