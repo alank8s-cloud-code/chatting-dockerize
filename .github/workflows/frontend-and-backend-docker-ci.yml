@@ -1,0 +1,105 @@
+name: Docker Compose DevSecOps
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  docker-ci:
+    name: Build, Scan and Push Images
+    runs-on: ubuntu-latest
+
+    steps:
+      # ==========================================
+      # 1. CHECKOUT
+      # ==========================================
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      # ==========================================
+      # 2. VALIDATE COMPOSE FILE
+      # ==========================================
+      - name: Validate Docker Compose
+        run: docker compose config
+
+      # ==========================================
+      # 3. SETUP BUILDX
+      # ==========================================
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # ==========================================
+      # 4. LOGIN TO DOCKER HUB
+      # ==========================================
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # ==========================================
+      # 5.  Build images from docker-compose.yml
+      # ==========================================
+
+      - name: Build Docker images with Bake
+        uses: docker/bake-action@v7
+        with:
+          files: ./docker-compose.yml
+          source: .
+          targets: default
+          load: true
+
+      # ==========================================
+      # 6. SHOW BUILT IMAGES
+      # ==========================================
+      - name: List Docker images
+        run: |
+          docker images
+
+      # ==========================================
+      # 7. SCAN BACKEND IMAGE
+      # ==========================================
+      - name: Scan backend image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.DOCKERHUB_USERNAME }}/chattingo-backend:${{ env.IMAGE_TAG }}
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+          version: "v0.74.0"
+
+      # ==========================================
+      # 8. SCAN FRONTEND IMAGE
+      # ==========================================
+      - name: Scan frontend image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.DOCKERHUB_USERNAME }}/chattingo-frontend:${{ env.IMAGE_TAG }}
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+          version: "v0.74.0"
+
+      # ==========================================
+      # 9. PUSH BACKEND IMAGE
+      # ==========================================
+      - name: Push backend image
+        run: |
+          docker push \
+            ${{ env.DOCKERHUB_USERNAME }}/chattingo-backend:${{ env.IMAGE_TAG }}
+
+      # ==========================================
+      # 10. PUSH FRONTEND IMAGE
+      # ==========================================
+      - name: Push frontend image
+        run: |
+          docker push \
+            ${{ env.DOCKERHUB_USERNAME }}/chattingo-frontend:${{ env.IMAGE_TAG }}

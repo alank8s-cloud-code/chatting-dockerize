@@ -1,6 +1,4 @@
 services:
-
-  # Service 1: A database application
   database:
     container_name: mysql-container
     image: mysql:8.0
@@ -8,22 +6,26 @@ services:
     networks:
       - chatting-network
     volumes:
-      - mysql_db:/var/lib/mysql 
+      - mysql_db:/var/lib/mysql
     ports:
       - "3306:3306"
-    env_file:
-      - ./backend/.env
-
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent",
+        ]
       interval: 10s
       timeout: 10s
       retries: 5
       start_period: 30s
 
-  # Service 2: A backend application
   backend:
     container_name: backend-app
+    image: ${DOCKERHUB_USERNAME}/chattingo-backend:${IMAGE_TAG:-latest}
     build:
       context: ./backend
       dockerfile: Dockerfile.multistage
@@ -31,25 +33,28 @@ services:
     networks:
       - chatting-network
     ports:
-      - "8080:8080"
-    env_file:
-      - ./backend/.env
+      - "${SERVER_PORT:-8080}:8080"
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      CORS_ALLOWED_METHODS: ${CORS_ALLOWED_METHODS}
+      CORS_ALLOWED_HEADERS: ${CORS_ALLOWED_HEADERS}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SERVER_PORT: ${SERVER_PORT:-8080}
     depends_on:
       database:
         condition: service_healthy
 
-  #  Service 3: A frontend application
   frontend:
     container_name: frontend-app
+    image: ${DOCKERHUB_USERNAME}/chattingo-frontend:${IMAGE_TAG:-latest}
     build:
       context: ./frontend
       dockerfile: Dockerfile.multistage
       args:
-        # Where the browser reaches the backend from. Defaults to localhost:8080
-        # for local/single-machine use. Override by setting REACT_APP_API_URL
-        # in a .env file next to this docker-compose.yml (or in your shell)
-        # before running `docker compose up --build`, e.g. for a real deployment:
-        #   REACT_APP_API_URL=https://api.yourdomain.com
         REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:8080}
     restart: unless-stopped
     networks:
@@ -66,5 +71,3 @@ networks:
 volumes:
   mysql_db:
     driver: local
-
-
