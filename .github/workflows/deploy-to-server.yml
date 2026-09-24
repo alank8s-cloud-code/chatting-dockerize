@@ -22,6 +22,8 @@ jobs:
             echo "Updating server... and Installing Docker..."
             sudo apt-get update && sudo apt-get install docker.io docker-compose-v2 -y
             sudo usermod -aG docker $USER || true
+            newgrp docker
+
             sudo systemctl enable docker
             sudo systemctl start docker
             mkdir -p ~/devops
