@@ -25,7 +25,23 @@ jobs:
       # 2. VALIDATE COMPOSE FILE
       # ==========================================
       - name: Validate Docker Compose
-        run: docker compose config
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          IMAGE_TAG: ${{ github.sha }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          CORS_ALLOWED_METHODS: ${{ vars.CORS_ALLOWED_METHODS }}
+          CORS_ALLOWED_HEADERS: ${{ vars.CORS_ALLOWED_HEADERS }}
+          SPRING_PROFILES_ACTIVE: ${{ vars.SPRING_PROFILES_ACTIVE }}
+          SERVER_PORT: ${{ vars.SERVER_PORT }}
+          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }
+        run: |
+          docker compose config
 
       # ==========================================
       # 3. SETUP BUILDX
