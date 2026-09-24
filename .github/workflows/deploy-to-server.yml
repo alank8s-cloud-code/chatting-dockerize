@@ -69,7 +69,7 @@ jobs:
 
             echo "Production environment created"
 
-      - name: ssh to prod server and run the application
+      - name: Run the application
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.EC2_SSH_HOST }}
