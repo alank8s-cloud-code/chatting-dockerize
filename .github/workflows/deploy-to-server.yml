@@ -83,6 +83,9 @@ jobs:
             echo "Logging in to Docker Hub..."
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
+            echo "Remove the old container"
+            docker compose -f docker-compose.prod.yml down -v
+
             echo "Pulling latest images..."
             docker compose -f docker-compose.prod.yml pull
 
