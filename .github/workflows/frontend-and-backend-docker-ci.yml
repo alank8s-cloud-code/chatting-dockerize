@@ -1,7 +1,6 @@
 name: Docker Compose DevSecOps
 
-on:
-  workflow_dispatch:
+on: workflow_dispatch
 
 permissions:
   contents: read
@@ -39,7 +38,7 @@ jobs:
           CORS_ALLOWED_HEADERS: ${{ vars.CORS_ALLOWED_HEADERS }}
           SPRING_PROFILES_ACTIVE: ${{ vars.SPRING_PROFILES_ACTIVE }}
           SERVER_PORT: ${{ vars.SERVER_PORT }}
-          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }
+          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
         run: |
           docker compose config
 
