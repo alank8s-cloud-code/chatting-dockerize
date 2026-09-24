@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: ssh to prod server and create app folder
-        uses: appleboy/ssh-action@v1.2.5
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.EC2_SSH_HOST }}
           username: ${{ secrets.EC2_SSH_USER }}
@@ -28,7 +28,7 @@ jobs:
             echo "EC2 preparation completed"
 
       - name: Copy docker-compose file to prod server
-        uses: appleboy/scp-action@v1.2.5
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.EC2_SSH_HOST }}
           username: ${{ secrets.EC2_SSH_USER }}
@@ -37,7 +37,7 @@ jobs:
           target: ~/devops
 
       - name: Create production environment
-        uses: appleboy/ssh-action@v1.2.5
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.EC2_SSH_HOST }}
           username: ${{ secrets.EC2_SSH_USER }}
@@ -70,7 +70,7 @@ jobs:
             echo "Production environment created"
 
       - name: ssh to prod server and run the application
-        uses: appleboy/ssh-action@v1.2.5
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.EC2_SSH_HOST }}
           username: ${{ secrets.EC2_SSH_USER }}
