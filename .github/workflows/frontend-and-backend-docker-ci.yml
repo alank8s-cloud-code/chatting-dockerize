@@ -62,6 +62,10 @@ jobs:
       # ==========================================
 
       - name: Build Docker images with Bake
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
+
         uses: docker/bake-action@v7
         with:
           files: ./docker-compose.yml
