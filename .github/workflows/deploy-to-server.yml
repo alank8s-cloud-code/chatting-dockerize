@@ -22,7 +22,6 @@ jobs:
             echo "Updating server... and Installing Docker..."
             sudo apt-get update && sudo apt-get install docker.io docker-compose-v2 -y
             sudo usermod -aG docker $USER || true
-            newgrp docker
 
             sudo systemctl enable docker
             sudo systemctl start docker
@@ -82,9 +81,6 @@ jobs:
             cd ~/devops
             echo "Logging in to Docker Hub..."
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
-            echo "Remove the old container"
-            docker compose -f docker-compose.prod.yml down -v
 
             echo "Pulling latest images..."
             docker compose -f docker-compose.prod.yml pull
