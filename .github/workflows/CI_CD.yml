@@ -41,6 +41,7 @@ jobs:
       - security_scan
       - docker_lint
     uses: ./.github/workflows/frontend-and-backend-docker-ci.yml
+    secrets: inherit
 
   # =========================
   # CD - Deployment
@@ -50,3 +51,4 @@ jobs:
     name: CD - Deploy to AWS EC2
     needs: docker_ci_frontend_backend
     uses: ./.github/workflows/deploy-to-server.yml
+    secrets: inherit
