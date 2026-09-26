@@ -55,7 +55,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.multistage
       args:
-        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:8080}
+        REACT_APP_API_URL: http://16.4.24.187:8080
     restart: unless-stopped
     networks:
       - chatting-network
