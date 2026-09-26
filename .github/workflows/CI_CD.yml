@@ -40,7 +40,7 @@ jobs:
       - code_quality_backend
       - security_scan
       - docker_lint
-    uses: ./.github/workflows/frontend-and-backend-docker-CI.yml
+    uses: ./.github/workflows/frontend-and-backend-docker-ci.yml
 
   # =========================
   # CD - Deployment
