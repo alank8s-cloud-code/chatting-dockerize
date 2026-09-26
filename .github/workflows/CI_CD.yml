@@ -1,0 +1,52 @@
+name: Chattingo CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # =========================
+  # CI - Code Quality & Security
+  # =========================
+
+  code_quality_frontend:
+    name: CI - Frontend Code Quality
+    uses: ./.github/workflows/Frontend-Code Quality-and-dependency-security.yml
+
+  code_quality_backend:
+    name: CI - Backend Code Quality
+    needs: code_quality_frontend
+    uses: ./.github/workflows/Backend-Code Quality-and-dependency-security.yml
+
+  security_scan:
+    name: CI - Secret Security Scan
+    needs:
+      - code_quality_frontend
+      - code_quality_backend
+    uses: ./.github/workflows/secret-security-scan.yml
+
+  docker_lint:
+    name: CI - Dockerfile Lint
+    needs:
+      - code_quality_frontend
+      - code_quality_backend
+    uses: ./.github/workflows/Dockerfile-syntax.yml
+
+  docker_ci_frontend_backend:
+    name: CI - Docker Build and Security Scan
+    needs:
+      - code_quality_frontend
+      - code_quality_backend
+      - security_scan
+      - docker_lint
+    uses: ./.github/workflows/frontend-and-backend-docker-CI.yml
+
+  # =========================
+  # CD - Deployment
+  # =========================
+
+  deploy_to_production:
+    name: CD - Deploy to AWS EC2
+    needs: docker_ci_frontend_backend
+    uses: ./.github/workflows/deploy-to-server.yml

@@ -1,6 +1,6 @@
 name: Backend Code Quality and Dependency Check
 
-on: workflow_dispatch
+on: workflow_call
 
 jobs:
   backend:

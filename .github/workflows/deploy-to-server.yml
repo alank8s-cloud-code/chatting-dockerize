@@ -1,6 +1,6 @@
 name: deploy to production server to EC2
 
-on: workflow_dispatch
+on: workflow_call
 
 jobs:
   deploy:
